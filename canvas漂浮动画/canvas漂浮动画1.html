@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>canvas 漂浮动画</title>
+    <style>
+        body {
+            margin: 0;
+        }
+
+        .bubble {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas class="bubble">
+        <div>
+
+        </div>
+    </canvas>
+    <script>
+        /*
+            1.让canvas可绘制区域与浏览器窗口一样大
+                1.1获取canvas元素
+                1.2获取窗口大小
+                1.3设置canvas宽高属性
+                1.4当浏览器窗口大小发生变化时,重新设置canvas元素宽高属性
+            2.图形绘制
+                2.1 短时间内连续播放多张图形
+                    60帧或以上
+                    setInterval(function(){},1000/60)
+                2.2每张图形内部物体状态要发生变化
+            3.绘制1314个会动的圆
+                大小,颜色,位置,速度,方向不一
+                同一个构造参数绘制出来的
+
+            圆心的位置x,y,圆的半径R,浏览器的宽高w,h
+            判断碰撞x<r x+r>w
+        */
+
+        let canvas = document.querySelector(".bubble");
+        let w, h;
+        let canCon = canvas.getContext("2d");
+        let aColor = ["#455A64", "#CFD8DC", "#009688", "#607D8B", "#FFFFFF", "#757575"];
+        let aBubble=[];
+
+        ~~function setSize() {
+            window.onresize = arguments.callee;     //函数本身
+            return ~~function () {
+                w = window.innerWidth;
+                h = window.innerHeight;
+                canvas.width = w;
+                canvas.height = h;
+            }();
+        }();
+
+        let y = 233, x = 233;
+
+        // setInterval(function(){
+        //     canCon.clearRect(0,0,w,h);
+        //     canCon.beginPath();
+        //     canCon.fillStyle="red",
+        //     canCon.arc(x++,y++,66,0,Math.PI*2);
+        //     canCon.fill();   
+        // },1000/60)
+
+        function random(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        function Bubble() {
+            this.r = random(1, 3);
+            this.x = random(this.r, w - this.r);
+            this.y = random(this.r, h - this.r);
+            this.color = aColor[Math.floor(random(0, 5))];
+            this.vx=random(-1,1);
+            this.vy=random(-1,1);
+        }
+        Bubble.prototype.draw = function () {
+            canCon.beginPath();
+            canCon.fillStyle = this.color,
+                canCon.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+            canCon.fill();
+        }
+
+        Bubble.prototype.update=function(){
+            this.x+=this.vx;
+            this.y+=this.vy;
+            if(this.x<this.r||this.x+this.r>w){
+                this.vx=-this.vx;
+            }
+            if(this.y<this.r||this.y+this.r>h){
+                this.vy=-this.vy;
+            }
+            this.draw();
+        }
+
+        function createBubble(num) {
+            for (let i = 0; i < num; i++) {
+                let bubble = new Bubble();
+                bubble.draw();
+                aBubble.push(bubble);
+            }
+        }
+
+        createBubble(130);
+        setInterval(()=>{
+            canCon.clearRect(0,0,w,h);
+            aBubble.forEach((item,index,arr)=>item.update());
+        },1000/60)
+    </script>
+</body>
+
+</html>
